@@ -24,6 +24,7 @@ export default function Navbar() {
   const menuItems = (
     <>
       <NavLink
+      onClick={() => setIsOpen(false)}
         to="/"
         className={({ isActive }) =>
           isActive
@@ -35,6 +36,7 @@ export default function Navbar() {
       </NavLink>
       {!cash && (
         <NavLink
+        onClick={() => setIsOpen(false)}
           to="/open-cash"
           className={({ isActive }) =>
             isActive
@@ -46,6 +48,7 @@ export default function Navbar() {
         </NavLink>
       )}
       <NavLink
+      onClick={() => setIsOpen(false)}
         to="/all-receipts"
         className={({ isActive }) =>
           isActive
@@ -56,6 +59,7 @@ export default function Navbar() {
         {isArabic ? "جميع الإيصالات" : "All Receipts"}
       </NavLink>
       <NavLink
+      onClick={() => setIsOpen(false)}
         to="/sell-summary"
         className={({ isActive }) =>
           isActive
@@ -66,6 +70,7 @@ export default function Navbar() {
         {isArabic ? "ملخص المبيعات" : "Sell Summary"}
       </NavLink>
       <NavLink
+      onClick={() => setIsOpen(false)}
         to="/products"
         className={({ isActive }) =>
           isActive
@@ -76,6 +81,7 @@ export default function Navbar() {
         {isArabic ? "المنتجات" : "Products"}
       </NavLink>
       <NavLink
+      onClick={() => setIsOpen(false)}
         to="/close-cash"
         className={({ isActive }) =>
           isActive
@@ -106,34 +112,8 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Desktop Menu */}
-        <div className="hidden lg:flex items-center space-x-2 scrollbar-thin scrollbar-thumb-pink-500">
-          {menuItems}
-          {(cash && !cashLoading) && (
-            <button className="btn btn-outline btn-primary">
-              {cash.openingCashAmount} {isArabic ? "ر.س" : "SAR"}
-            </button>
-          )}
-          {/* User Info */}
-          <div className="flex items-center gap-3 ml-4 whitespace-nowrap">
-            <div className="font-semibold">{userName}</div>
-            <button
-              onClick={handleSignOut}
-              className="btn btn-error btn-sm transition-transform hover:scale-105 origin-center"
-            >
-              {isArabic ? "تسجيل الخروج" : "Sign Out"}
-            </button>
-            <button
-              onClick={toggleLanguage}
-              className="btn btn-outline btn-sm whitespace-nowrap"
-            >
-              {isArabic ? "English" : "العربية"}
-            </button>
-          </div>
-        </div>
-
         {/* Mobile Menu Toggle */}
-        <div className="lg:hidden">
+        <div>
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="btn btn-ghost focus:outline-none"
@@ -143,35 +123,27 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Dropdown */}
-      <div
-        className={`lg:hidden transition-all duration-300 ease-in-out bg-white overflow-hidden ${isOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
-          }`}
-      >
-        <div className="flex flex-col gap-2 p-4">
-          {menuItems}
-          {(cash && !cashLoading) && (
-            <button className="btn btn-outline btn-primary w-full">
-              {cash.openingCashAmount} {isArabic ? "ر.س" : "SAR"}
-            </button>
-          )}
-          <div className="flex flex-col gap-2 mt-2">
-            <div className="font-semibold text-center">{userName}</div>
-            <button
-              onClick={handleSignOut}
-              className="btn btn-error btn-sm w-full"
-            >
-              {isArabic ? "تسجيل الخروج" : "Sign Out"}
-            </button>
-            <button
-              onClick={toggleLanguage}
-              className="btn btn-outline btn-sm w-full"
-            >
-              {isArabic ? "English" : "العربية"}
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Toggleable Menu (Always used) */}
+<div className={`transition-all duration-300 ease-in-out bg-white overflow-hidden ${isOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"}`}>
+  <div className="flex flex-col gap-2 p-4">
+    {menuItems}
+    {(cash && !cashLoading) && (
+      <button className="btn btn-outline btn-primary w-full">
+        {cash.openingCashAmount} {isArabic ? "ر.س" : "SAR"}
+      </button>
+    )}
+    <div className="flex flex-col gap-2 mt-2">
+      <div className="font-semibold text-center">{userName}</div>
+      <button onClick={handleSignOut} className="btn btn-error btn-sm w-full">
+        {isArabic ? "تسجيل الخروج" : "Sign Out"}
+      </button>
+      <button onClick={toggleLanguage} className="btn btn-outline btn-sm w-full">
+        {isArabic ? "English" : "العربية"}
+      </button>
+    </div>
+  </div>
+</div>
+
     </div>
   );
 }
