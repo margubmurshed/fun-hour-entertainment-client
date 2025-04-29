@@ -127,6 +127,7 @@ export default function Products() {
       <h2 className="text-xl font-bold mb-4">
         {isArabic ? (showEditModal ? "تعديل المنتج" : "إضافة منتج") : (showEditModal ? "Edit Product" : "Add Product")}
       </h2>
+      <label className="block text-sm font-medium text-gray-700 mb-1">{isArabic ? "اسم المنتج" : "Product Name"}</label>
       <input
         type="text"
         name="name"
@@ -135,6 +136,7 @@ export default function Products() {
         placeholder={isArabic ? "اسم المنتج" : "Product Name"}
         className="input input-bordered w-full mb-4"
       />
+      <label className="block text-sm font-medium text-gray-700 mb-1">{isArabic ? "سعر المنتج" : "Product Price"}</label>
       <input
         type="number"
         name="price"
@@ -143,6 +145,7 @@ export default function Products() {
         placeholder={isArabic ? "سعر المنتج" : "Product Price"}
         className="input input-bordered w-full mb-4"
       />
+      <label className="block text-sm font-medium text-gray-700 mb-1">{isArabic ? "المخزون" : "Inventory"}</label>
       <input
         type="number"
         name="inventory"
@@ -171,65 +174,84 @@ export default function Products() {
   if (loading) return <Loading />;
 
   return (
-    <div className="p-6" dir={isArabic ? "rtl" : "ltr"}>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-pink-600">
-          {isArabic ? "المنتجات" : "Products"}
-        </h1>
-        <button
-          onClick={() => {
-            resetProductState();
-            setShowAddModal(true);
-          }}
-          className="btn btn-primary"
-          aria-label={isArabic ? "إضافة منتج جديد" : "Add new product"}
-        >
-          <FaPlus className="mr-2" /> {isArabic ? "إضافة منتج" : "Add Product"}
-        </button>
-      </div>
-
-      <div className="overflow-x-auto shadow rounded-lg">
-        <table className="table w-full text-sm md:text-base">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-2">{isArabic ? "الاسم" : "Name"}</th>
-              <th className="p-2">{isArabic ? "السعر (ر.س)" : "Price (SAR)"}</th>
-              <th className="p-2">{isArabic ? "المخزون" : "Inventory"}</th>
-              <th className="p-2">{isArabic ? "الإجراءات" : "Actions"}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((p) => (
-              <tr key={p._id} className="hover:bg-gray-50">
-                <td className="p-2">{p.name}</td>
-                <td className="p-2">{parseFloat(p.price).toFixed(2)}</td>
-                <td className="p-2">{p.inventory}</td>
-                <td className="p-2 flex gap-2">
-                  <button onClick={() => handleEdit(p)} className="btn btn-sm btn-warning" disabled={actionLoading}>
-                    <FaEdit />
-                  </button>
-                  <button onClick={() => handleDelete(p._id)} className="btn btn-sm btn-error" disabled={actionLoading}>
-                    <FaTrash />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modals */}
-      {(showEditModal || showAddModal) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <ProductForm
-            onSave={showEditModal ? handleUpdateProduct : handleAddProduct}
-            onCancel={() => {
-              showEditModal ? setShowEditModal(false) : setShowAddModal(false);
+    <div className="min-h-screen px-4 py-10 bg-gradient-to-br from-pink-50 to-purple-50" dir={isArabic ? "rtl" : "ltr"}>
+      <div className="max-w-5xl mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+          <h1 className="text-3xl font-extrabold text-pink-700">
+            {isArabic ? "المنتجات" : "Products"}
+          </h1>
+          <button
+            onClick={() => {
               resetProductState();
+              setShowAddModal(true);
             }}
-          />
+            className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-all"
+            aria-label={isArabic ? "إضافة منتج جديد" : "Add new product"}
+          >
+            <FaPlus className="text-sm" />
+            <span>{isArabic ? "إضافة منتج" : "Add Product"}</span>
+          </button>
         </div>
-      )}
+
+        <div className="overflow-x-auto bg-white shadow-md rounded-xl">
+          <table className="min-w-full text-sm md:text-base">
+            <thead className="bg-gray-100 text-gray-700">
+              <tr>
+                <th className="p-4 text-start">{isArabic ? "الاسم" : "Name"}</th>
+                <th className="p-4 text-start">{isArabic ? "السعر (ر.س)" : "Price (SAR)"}</th>
+                <th className="p-4 text-start">{isArabic ? "المخزون" : "Inventory"}</th>
+                <th className="p-4 text-start">{isArabic ? "الإجراءات" : "Actions"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((p) => (
+                <tr key={p._id} className="border-t hover:bg-gray-50">
+                  <td className="p-4">{p.name}</td>
+                  <td className="p-4">{parseFloat(p.price).toFixed(2)}</td>
+                  <td className="p-4">{p.inventory}</td>
+                  <td className="p-4 flex gap-2">
+                    <button
+                      onClick={() => handleEdit(p)}
+                      className="bg-yellow-400 hover:bg-yellow-500 text-white rounded px-3 py-1 text-sm"
+                      disabled={actionLoading}
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(p._id)}
+                      className="bg-red-500 hover:bg-red-600 text-white rounded px-3 py-1 text-sm"
+                      disabled={actionLoading}
+                    >
+                      <FaTrash />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {(showEditModal || showAddModal) && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="productFormTitle"
+          >
+            <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+              <ProductForm
+                onSave={showEditModal ? handleUpdateProduct : handleAddProduct}
+                onCancel={() => {
+                  showEditModal ? setShowEditModal(false) : setShowAddModal(false);
+                  resetProductState();
+                }}
+                isArabic={isArabic}
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
+
 }

@@ -6,6 +6,37 @@ import Loading from '../components/Loading';
 import { languageContext } from '../contexts/LanguageProvider';
 import { cashContext } from '../contexts/CashProvider';
 
+function Section({ title, children }) {
+  return (
+    <section className="mb-12">
+      <h2 className="text-xl font-bold text-rose-600 mb-4">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function StyledTable({ headers, children }) {
+  return (
+    <div className="overflow-x-auto rounded-xl shadow border border-pink-100 bg-white">
+      <table className="min-w-full table-auto text-sm text-left">
+        <thead className="bg-pink-100 text-rose-700">
+          <tr>
+            {headers.map((h, i) => (
+              <th key={i} className="px-4 py-3 font-semibold">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>{children}</tbody>
+      </table>
+    </div>
+  );
+}
+
+function NoDataMessage({ text }) {
+  return <p className="text-gray-500 italic">{text}</p>;
+}
+
+
 export default function SellSummary() {
   const { isArabic } = useContext(languageContext);
   const { cash } = useContext(cashContext);
@@ -91,145 +122,99 @@ export default function SellSummary() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
-      <h1 className="text-3xl font-bold text-center text-pink-600 mb-6">
+    <div className="w-full px-4 sm:px-6 lg:px-12 py-8 bg-pink-50 min-h-screen" dir={isArabic ? "rtl" : "ltr"}>
+      <h1 className="text-4xl font-bold text-center text-rose-600 mb-10">
         {isArabic ? "ملخص مبيعات اليوم" : "Today's Sales Summary"}
       </h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="stats shadow">
-          <div className="stat">
-            <div className="stat-title">{isArabic ? "إجمالي المبيعات" : "Total Sales"}</div>
-            <div className="stat-value text-primary">{totalSales.toFixed(2)} ريال</div>
-            <div className="stat-desc">
-              {todaysReceipts.length} {isArabic ? "إيصال" : "Receipts"}
+  
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-12">
+        {[
+          { label: isArabic ? "إجمالي المبيعات" : "Total Sales", value: totalSales, color: "rose-600" },
+          { label: isArabic ? "إجمالي الضريبة" : "Total VAT", value: totalVat, color: "pink-600" },
+          { label: isArabic ? "مبيعات نقدية" : "Cash Sales", value: cashSales, color: "fuchsia-600" },
+          { label: isArabic ? "مبيعات بطاقة" : "Card Sales", value: cardSales, color: "purple-600" },
+        ].map((item, i) => (
+          <div key={i} className="rounded-xl bg-white p-6 shadow-md border border-pink-100">
+            <div className="text-sm text-gray-500 mb-1">{item.label}</div>
+            <div className={`text-2xl font-semibold text-${item.color}`}>
+              {item.value.toFixed(2)} ريال
             </div>
           </div>
-        </div>
-
-        <div className="stats shadow">
-          <div className="stat">
-            <div className="stat-title">{isArabic ? "إجمالي الضريبة" : "Total VAT"}</div>
-            <div className="stat-value text-secondary">{totalVat.toFixed(2)} ريال</div>
-          </div>
-        </div>
-
-        <div className="stats shadow">
-          <div className="stat">
-            <div className="stat-title">{isArabic ? "مبيعات نقدية" : "Cash Sales"}</div>
-            <div className="stat-value text-success">{cashSales.toFixed(2)} ريال</div>
-          </div>
-        </div>
-
-        <div className="stats shadow">
-          <div className="stat">
-            <div className="stat-title">{isArabic ? "مبيعات بطاقة" : "Card Sales"}</div>
-            <div className="stat-value text-accent">{cardSales.toFixed(2)} ريال</div>
-          </div>
-        </div>
+        ))}
       </div>
-
-      {/* Products Sold Today */}
-      <div className="mt-10">
-        <h2 className="text-2xl font-bold mb-4">
-          {isArabic ? "المنتجات المباعة اليوم" : "Products Sold Today"}
-        </h2>
+  
+      {/* Section: Products */}
+      <Section title={isArabic ? "المنتجات المباعة اليوم" : "Products Sold Today"}>
         {productsSold.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="table table-zebra">
-              <thead>
-                <tr>
-                  <th>{isArabic ? "المنتج" : "Product Name"}</th>
-                  <th>{isArabic ? "السعر (لكل وحدة)" : "Price (Each)"}</th>
-                  <th>{isArabic ? "الكمية" : "Quantity Sold"}</th>
-                  <th>{isArabic ? "الإجمالي (ريال)" : "Total (SAR)"}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {productsSold.map((item, index) => (
-                  <tr key={index}>
-                    <td>{item.name}</td>
-                    <td>{item.price} ريال</td>
-                    <td>{item.quantity}</td>
-                    <td>{(item.price * item.quantity).toFixed(2)} ريال</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p>{isArabic ? "لم يتم بيع أي منتجات اليوم." : "No products sold today."}</p>
-        )}
-      </div>
-
-      {/* Services Sold Today */}
-      <div className="mt-10">
-        <h2 className="text-2xl font-bold mb-4">
-          {isArabic ? "الخدمات المقدمة اليوم" : "Services Sold Today"}
-        </h2>
-        {servicesSold.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="table table-zebra">
-              <thead>
-                <tr>
-                  <th>{isArabic ? "الخدمة" : "Service Name"}</th>
-                  <th>{isArabic ? "السعر" : "Price (Each)"}</th>
-                  <th>{isArabic ? "عدد المرات" : "Times Sold"}</th>
-                  <th>{isArabic ? "الإجمالي (ريال)" : "Total (SAR)"}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {servicesSold.map((item, index) => (
-                  <tr key={index}>
-                    <td>{item.name}</td>
-                    <td>{item.price} ريال</td>
-                    <td>{item.count}</td>
-                    <td>{(item.price * item.count).toFixed(2)} ريال</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p>{isArabic ? "لم يتم بيع أي خدمات اليوم." : "No services sold today."}</p>
-        )}
-      </div>
-
-      {/* Receipts Table */}
-      <div className="mt-10">
-        <h2 className="text-2xl font-bold mb-4">
-          {isArabic ? "إيصالات اليوم" : "Receipts of Today"}
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="table table-zebra">
-            <thead>
-              <tr>
-                <th>{isArabic ? "العميل" : "Customer"}</th>
-                <th>{isArabic ? "رقم الجوال" : "Mobile"}</th>
-                <th>{isArabic ? "الدفع" : "Payment"}</th>
-                <th>{isArabic ? "الإجمالي (ريال)" : "Total (SAR)"}</th>
-                <th>{isArabic ? "الوقت" : "Time"}</th>
+          <StyledTable headers={[
+            isArabic ? "المنتج" : "Product Name",
+            isArabic ? "السعر" : "Price",
+            isArabic ? "الكمية" : "Quantity",
+            isArabic ? "الإجمالي" : "Total"
+          ]}>
+            {productsSold.map((item, i) => (
+              <tr key={i} className="hover:bg-pink-50">
+                <td className="px-4 py-2">{item.name}</td>
+                <td className="px-4 py-2">{item.price} ريال</td>
+                <td className="px-4 py-2">{item.quantity}</td>
+                <td className="px-4 py-2">{(item.price * item.quantity).toFixed(2)} ريال</td>
               </tr>
-            </thead>
-            <tbody>
-              {todaysReceipts.map(r => (
-                <tr key={r._id}>
-                  <td>{r.customerName || (isArabic ? 'غير معروف' : 'N/A')}</td>
-                  <td>{r.mobileNumber || 'N/A'}</td>
-                  <td className="capitalize">
-                    {r.paymentType === 'cash' && (isArabic ? 'نقداً' : 'Cash')}
-                    {r.paymentType === 'card' && (isArabic ? 'بطاقة' : 'Card')}
-                    {!['cash', 'card'].includes(r.paymentType) && 'N/A'}
-                  </td>
-                  <td>{(r.total || 0).toFixed(2)} ريال</td>
-                  <td>{moment(r.createdAt).format('hh:mm A')}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
+            ))}
+          </StyledTable>
+        ) : (
+          <NoDataMessage text={isArabic ? "لم يتم بيع أي منتجات اليوم." : "No products sold today."} />
+        )}
+      </Section>
+  
+      {/* Section: Services */}
+      <Section title={isArabic ? "الخدمات المقدمة اليوم" : "Services Sold Today"}>
+        {servicesSold.length > 0 ? (
+          <StyledTable headers={[
+            isArabic ? "الخدمة" : "Service Name",
+            isArabic ? "السعر" : "Price",
+            isArabic ? "عدد المرات" : "Times",
+            isArabic ? "الإجمالي" : "Total"
+          ]}>
+            {servicesSold.map((item, i) => (
+              <tr key={i} className="hover:bg-pink-50">
+                <td className="px-4 py-2">{item.name}</td>
+                <td className="px-4 py-2">{item.price} ريال</td>
+                <td className="px-4 py-2">{item.count}</td>
+                <td className="px-4 py-2">{(item.price * item.count).toFixed(2)} ريال</td>
+              </tr>
+            ))}
+          </StyledTable>
+        ) : (
+          <NoDataMessage text={isArabic ? "لم يتم بيع أي خدمات اليوم." : "No services sold today."} />
+        )}
+      </Section>
+  
+      {/* Section: Receipts */}
+      <Section title={isArabic ? "إيصالات اليوم" : "Receipts of Today"}>
+        <StyledTable headers={[
+          isArabic ? "العميل" : "Customer",
+          isArabic ? "رقم الجوال" : "Mobile",
+          isArabic ? "الدفع" : "Payment",
+          isArabic ? "الإجمالي" : "Total",
+          isArabic ? "الوقت" : "Time",
+        ]}>
+          {todaysReceipts.map(r => (
+            <tr key={r._id} className="hover:bg-pink-50">
+              <td className="px-4 py-2">{r.customerName || (isArabic ? "غير معروف" : "N/A")}</td>
+              <td className="px-4 py-2">{r.mobileNumber || 'N/A'}</td>
+              <td className="px-4 py-2 capitalize">
+                {r.paymentType === 'cash' && (isArabic ? 'نقداً' : 'Cash')}
+                {r.paymentType === 'card' && (isArabic ? 'بطاقة' : 'Card')}
+                {!['cash', 'card'].includes(r.paymentType) && 'N/A'}
+              </td>
+              <td className="px-4 py-2">{(r.total || 0).toFixed(2)} ريال</td>
+              <td className="px-4 py-2">{moment(r.createdAt).format('hh:mm A')}</td>
+            </tr>
+          ))}
+        </StyledTable>
+      </Section>
     </div>
   );
+  
 }

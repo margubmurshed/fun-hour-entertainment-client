@@ -15,6 +15,11 @@ export default function Navbar() {
 
   const userName = userLoading ? "Loading..." : (user?.displayName || "User");
 
+  const handleLanguageToggle = () => {
+    toggleLanguage();
+    setIsOpen(false)
+  }
+
   const handleSignOut = () => {
     logOut()
       .then(() => toast.success("Signed out successfully"))
@@ -95,7 +100,7 @@ export default function Navbar() {
   );
 
   return (
-    <div className="bg-white shadow-md mb-6 select-none">
+    <div className="bg-white shadow-md select-none">
       <div className="navbar max-w-7xl mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-2">
@@ -129,7 +134,7 @@ export default function Navbar() {
     {menuItems}
     {(cash && !cashLoading) && (
       <button className="btn btn-outline btn-primary w-full">
-        {cash.openingCashAmount} {isArabic ? "ر.س" : "SAR"}
+        {isArabic? "مبلغ افتتاح النقدية": "Cash Opening Amount"} : {cash.openingCashAmount} {isArabic ? "ر.س" : "SAR"}
       </button>
     )}
     <div className="flex flex-col gap-2 mt-2">
@@ -137,7 +142,7 @@ export default function Navbar() {
       <button onClick={handleSignOut} className="btn btn-error btn-sm w-full">
         {isArabic ? "تسجيل الخروج" : "Sign Out"}
       </button>
-      <button onClick={toggleLanguage} className="btn btn-outline btn-sm w-full">
+      <button onClick={handleLanguageToggle} className="btn btn-outline btn-sm w-full">
         {isArabic ? "English" : "العربية"}
       </button>
     </div>

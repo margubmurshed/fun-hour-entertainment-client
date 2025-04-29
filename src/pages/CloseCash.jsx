@@ -66,26 +66,30 @@ export default function CloseCash() {
   if (cashLoading) return <Loading />;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 select-none" dir={isArabic ? "rtl" : "ltr"}>
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center text-pink-600 mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-white to-purple-100 py-10 px-6 select-none" dir={isArabic ? "rtl" : "ltr"}>
+      <div className="max-w-xl mx-auto bg-white shadow-xl rounded-3xl p-8">
+        <h1 className="text-3xl font-extrabold text-pink-600 mb-6 text-center">
           {isArabic ? "أدخل المبلغ الختامي" : "Enter Closing Cash"}
         </h1>
 
-        <div className="card bg-base-100 shadow p-6">
+        <div className="space-y-4">
           <input
             type="text"
             placeholder={isArabic ? "أدخل المبلغ بالريال" : "Enter amount in SAR"}
-            className="input input-bordered w-full mb-4"
+            className="w-full border border-pink-300 focus:ring-2 focus:ring-pink-400 rounded-xl px-4 py-3 text-gray-800 placeholder-gray-400"
             value={closingCash}
             onChange={(e) => setClosingCash(e.target.value)}
           />
 
-          <button className="btn btn-primary w-full" onClick={handleSubmit}>
+          <button
+            className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded-xl transition"
+            onClick={handleSubmit}
+          >
             {isArabic ? "إغلاق الصندوق" : "Close Cash"}
           </button>
         </div>
       </div>
     </div>
   );
+
 }

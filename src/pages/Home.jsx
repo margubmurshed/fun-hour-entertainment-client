@@ -44,7 +44,7 @@ export default function Home() {
             alertAudioRef.current = new Audio('/alert.mp3'); // Put alert.mp3 in public/
             alertAudioRef.current.loop = true;
         }
-    
+
         if (expiredServices.length > 0) {
             alertAudioRef.current.play().catch(e => console.warn("Audio blocked until user interaction:", e));
         } else {
@@ -52,7 +52,7 @@ export default function Home() {
             alertAudioRef.current.currentTime = 0;
         }
     }, [expiredServices]);
-    
+
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -194,50 +194,43 @@ export default function Home() {
     if (loading) return <Loading />;
 
     return (
-        <div className="max-w-2xl mx-auto px-4 py-6 bg-white min-h-screen relative">
-            {expiredServices.map((rental, index) => (
-                <div key={index} className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 260, damping: 20 }} className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
-                        <h2 className="text-2xl font-bold mb-4 text-red-600 animate-bounce">{isArabic ? "⏰ انتهى الوقت!" : "⏰ Time Over!"}</h2>
-                        <p className="text-lg mb-2 font-semibold">{rental.customerName}</p>
-                        <p className="text-lg mb-2 font-semibold">{rental.mobileNumber}</p>
-                        <p className="mb-4">{isArabic ? "الخدمة:" : "Service:"} <strong>{rental.serviceName}</strong> {isArabic ? "انتهت صلاحيتها!" : "has expired!"}</p>
-                        <button className="btn btn-error" onClick={() => setExpiredServices(prev => prev.filter((_, i) => i !== index))}>
-                            {isArabic ? "إغلاق" : "Close"}
-                        </button>
-                    </motion.div>
+        <div className="min-h-screen w-full bg-gradient-to-br from-pink-100 via-white to-purple-100 px-4 py-6">
+            <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6">
+                <div className="text-center mb-6">
+                    <h1 className="text-3xl font-extrabold text-pink-600 tracking-tight">
+                        {isArabic ? "ساعة فرح للترفيه" : "Fun Hour Entertainment"}
+                    </h1>
                 </div>
-            ))}
 
-            <div className="text-center mb-6">
-                <h1 className="text-3xl font-bold text-pink-600">{isArabic ? "ساعة فرح للترفيه" : "Fun Hour Entertainment"}</h1>
-            </div>
-
-            <div className="space-y-4">
                 <input
                     type="text"
                     placeholder={isArabic ? "اسم العميل" : "Customer Name"}
-                    className="input input-bordered w-full"
+                    className="input input-bordered w-full border-pink-300 focus:ring-2 focus:ring-pink-400"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                 />
+
                 <input
                     type="text"
                     placeholder={isArabic ? "رقم الجوال" : "Mobile Number"}
-                    className="input input-bordered w-full"
+                    className="input input-bordered w-full border-pink-300 focus:ring-2 focus:ring-pink-400"
                     value={mobileNumber}
                     onChange={(e) => setMobileNumber(e.target.value)}
                 />
+
                 <div>
-                    <h2 className="text-xl font-bold mb-2">
+                    <h2 className="text-xl font-bold mb-2 text-pink-700">
                         {isArabic ? "اختيار الخدمة" : "Select Service"}
                     </h2>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {[...rents, ...packages].map((item) => (
                             <button
                                 key={item.id}
                                 onClick={() => toggleService(item)}
-                                className={`btn ${selectedServices.some(i => i.id === item.id) ? 'btn-success' : 'btn-outline'}`}
+                                className={`rounded-full py-2 px-4 font-medium shadow ${selectedServices.some(i => i.id === item.id)
+                                        ? 'bg-pink-500 text-white hover:bg-pink-600'
+                                        : 'bg-white border border-pink-300 text-pink-600 hover:bg-pink-100'
+                                    }`}
                             >
                                 {isArabic ? item.name_ar : item.name} - {item.price} SAR
                             </button>
@@ -246,23 +239,26 @@ export default function Home() {
                 </div>
 
                 <div>
-                    <h2 className="text-xl font-bold mb-2">
+                    <h2 className="text-xl font-bold mb-2 text-pink-700">
                         {isArabic ? "المنتجات" : "Products"}
                     </h2>
                     <input
                         type="text"
                         placeholder={isArabic ? "بحث عن منتج..." : "Search for a product..."}
-                        className="input input-bordered w-full mb-2"
+                        className="input input-bordered w-full border-pink-300 focus:ring-2 focus:ring-pink-400 mb-2"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {filteredProducts.map((product) => (
-                            <div key={product._id} className="border p-3 rounded shadow">
-                                <h3 className="font-semibold">{product.name}</h3>
+                            <div key={product._id} className="bg-white border border-pink-200 p-4 rounded-xl shadow-md">
+                                <h3 className="font-semibold text-pink-700">{product.name}</h3>
                                 <p>{isArabic ? "السعر" : "Price"}: {product.price} SAR</p>
                                 <p>{isArabic ? "المخزون" : "Stock"}: {product.inventory}</p>
-                                <button className="btn btn-primary btn-sm mt-2" onClick={() => addProduct(product)}>
+                                <button
+                                    className="mt-2 bg-pink-500 text-white rounded-full px-4 py-1 hover:bg-pink-600"
+                                    onClick={() => addProduct(product)}
+                                >
                                     {isArabic ? "إضافة" : "Add"}
                                 </button>
                             </div>
@@ -271,47 +267,56 @@ export default function Home() {
                 </div>
 
                 <div>
-                    <h2 className="text-xl font-bold mb-2">
+                    <h2 className="text-xl font-bold mb-2 text-pink-700">
                         {isArabic ? "العناصر المختارة" : "Selected Items"}
                     </h2>
                     {selectedProducts.length === 0 ? (
                         <p className="text-gray-500">{isArabic ? "لم يتم اختيار منتجات." : "No products selected."}</p>
                     ) : (
                         selectedProducts.map((item) => (
-                            <div key={item._id} className="flex justify-between items-center mb-2">
+                            <div key={item._id} className="flex justify-between items-center bg-pink-50 rounded-xl p-3 mb-2 shadow-sm">
                                 <div>
-                                    <p>{item.name}</p>
+                                    <p className="font-semibold">{item.name}</p>
                                     <p>{item.price} x {item.quantity}</p>
                                 </div>
-                                <div>
-                                    <button className="btn btn-sm btn-outline mr-1" onClick={() => addProduct(item)}>+</button>
-                                    <button className="btn btn-sm btn-outline" onClick={() => removeProduct(item)}>-</button>
+                                <div className="flex space-x-2">
+                                    <button className="bg-pink-500 text-white px-3 py-1 rounded hover:bg-pink-600" onClick={() => addProduct(item)}>+</button>
+                                    <button className="bg-purple-400 text-white px-3 py-1 rounded hover:bg-purple-500" onClick={() => removeProduct(item)}>-</button>
                                 </div>
                             </div>
                         ))
                     )}
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1 text-pink-700">
                     <p><strong>{isArabic ? "الضريبة (15%):" : "VAT (15%)"}:</strong> {vat.toFixed(2)} SAR</p>
                     <p><strong>{isArabic ? "السعر الإجمالي:" : "Total"}:</strong> {total.toFixed(2)} SAR</p>
                 </div>
 
                 <div className="space-y-2">
-                    <label className="block font-bold">{isArabic ? "نوع الدفع:" : "Payment Type:"}</label>
-                    <select className="select select-bordered w-full" value={paymentType} onChange={(e) => setPaymentType(e.target.value)}>
+                    <label className="block font-bold text-pink-700">{isArabic ? "نوع الدفع:" : "Payment Type:"}</label>
+                    <select
+                        className="select select-bordered w-full border-pink-300 focus:ring-2 focus:ring-pink-400"
+                        value={paymentType}
+                        onChange={(e) => setPaymentType(e.target.value)}
+                    >
                         <option value="cash">{isArabic ? "نقداً" : "Cash"}</option>
                         <option value="card">{isArabic ? "بطاقة" : "Card"}</option>
                     </select>
                 </div>
 
                 <div className="mt-4">
-                    <button className="btn btn-primary w-full" onClick={generateReceipt}>
+                    <button
+                        className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 rounded-xl text-lg font-bold hover:from-pink-600 hover:to-purple-600 transition"
+                        onClick={generateReceipt}
+                    >
                         {isArabic ? "إنشاء الفاتورة" : "Generate Receipt"}
                     </button>
                 </div>
             </div>
         </div>
+
     );
+
 }
 

@@ -50,31 +50,32 @@ export default function OpenCash() {
       .finally(() => setCashLoading(false));
   };
 
-  if (cashLoading)
-    return (
-      <Loading />
-    );
+  if (cashLoading) return <Loading />;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 select-none" dir={isArabic ? "rtl" : "ltr"}>
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center text-pink-600 mb-6">
+    <div
+      className="min-h-screen w-full px-4 py-10 bg-gradient-to-br from-pink-100 to-purple-100"
+      dir={isArabic ? "rtl" : "ltr"}
+    >
+      <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-md p-6">
+        <h1 className="text-3xl font-bold text-center text-pink-700 mb-6">
           {isArabic ? "أدخل المبلغ الافتتاحي" : "Enter Opening Cash"}
         </h1>
 
-        <div className="card bg-base-100 shadow p-6">
-          <input
-            type="text"
-            placeholder={isArabic ? "أدخل المبلغ بالريال" : "Enter amount in SAR"}
-            className="input input-bordered w-full mb-4"
-            value={openingCash}
-            onChange={(e) => setOpeningCash(e.target.value)}
-          />
+        <input
+          type="text"
+          placeholder={isArabic ? "أدخل المبلغ بالريال" : "Enter amount in SAR"}
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-pink-300"
+          value={openingCash}
+          onChange={(e) => setOpeningCash(e.target.value)}
+        />
 
-          <button className="btn btn-primary w-full" onClick={handleSubmit}>
-            {isArabic ? "حفظ المبلغ الافتتاحي" : "Save Opening Cash"}
-          </button>
-        </div>
+        <button
+          onClick={handleSubmit}
+          className="w-full bg-pink-600 hover:bg-pink-700 text-white font-semibold py-3 rounded-lg transition duration-200"
+        >
+          {isArabic ? "حفظ المبلغ الافتتاحي" : "Save Opening Cash"}
+        </button>
       </div>
     </div>
   );
