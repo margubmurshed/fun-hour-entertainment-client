@@ -33,10 +33,10 @@ export default function CloseCash() {
     };
 
     setCashLoading(true);
-    axios.patch(`http://192.168.0.102:5000/cashes/${cash._id}`, data)
+    axios.patch(`http://192.168.8.10:5000/cashes/${cash._id}`, data)
       .then((result) => {
         if (result.data.modifiedCount) {
-          axios.post("http://192.168.0.102:5000/print-cash", {
+          axios.post("http://192.168.8.10:5000/print-cash", {
             cashierName: user.displayName,
             cashierEmail: user.email,
             cashId: cash._id

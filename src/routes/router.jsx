@@ -8,6 +8,7 @@ import PrivateRoute from "./PrivateRoute";
 import CloseCash from "../pages/CloseCash";
 import Products from "../pages/Products";
 import SellSummary from "../pages/SellSummary";
+import ProductSelection from "../pages/ProductSelection";
 
 export const router = createBrowserRouter([
     {
@@ -17,6 +18,7 @@ export const router = createBrowserRouter([
             { path: "all-receipts", element: <PrivateRoute><AllReceiptsPage /></PrivateRoute> },
             { path: "close-cash", element: <PrivateRoute><CloseCash /></PrivateRoute> },
             { path: "products", element: <PrivateRoute><Products /></PrivateRoute> },
+            { path: "select-products", element: <PrivateRoute><ProductSelection /></PrivateRoute> },
             { path: "sell-summary", element: <PrivateRoute><SellSummary /></PrivateRoute> },
         ]
     },

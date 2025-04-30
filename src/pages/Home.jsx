@@ -5,6 +5,9 @@ import { cashContext } from '../contexts/CashProvider';
 import Loading from '../components/Loading';
 import { languageContext } from '../contexts/LanguageProvider';
 import ExpiredModal from '../components/ExpiredModal';
+import { useProductSelection } from '../contexts/ProductSelectionContext';
+import { useNavigate } from 'react-router-dom';
+import { FaGear } from 'react-icons/fa6';
 
 const rents = [
     { id: 1, name: "1 Hour", name_ar: "ساعة واحدة", price: 29, duration: 60 },
@@ -22,18 +25,18 @@ export default function Home() {
     const { isArabic } = useContext(languageContext);
     const [customerName, setCustomerName] = useState('');
     const [mobileNumber, setMobileNumber] = useState('');
-    const [products, setProducts] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
-    const [selectedProducts, setSelectedProducts] = useState([]);
     const [paymentType, setPaymentType] = useState('cash');
-    const [loading, setLoading] = useState(true);
     const [activeRentals, setActiveRentals] = useState([]);
     const [expiredServices, setExpiredServices] = useState([]);
-    const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [generateReceiptLoading, setGenerateReceiptLoading] = useState(false);
     const [currentExpiredIndex, setCurrentExpiredIndex] = useState(0);
     const { cash } = useContext(cashContext);
     const alertAudioRef = useRef(null);
+    const { selectedProducts, setSelectedProducts } = useProductSelection();
+    const navigate = useNavigate();
+
 
     useEffect(() => {
         if (!alertAudioRef.current) {
@@ -56,7 +59,6 @@ export default function Home() {
     }, [expiredServices]);
 
     useEffect(() => {
-        fetchProducts();
         const storedRentals = JSON.parse(localStorage.getItem('activeRentals') || '[]');
         setActiveRentals(storedRentals);
     }, []);
@@ -99,19 +101,6 @@ export default function Home() {
     };
 
 
-    const fetchProducts = async () => {
-        setLoading(true);
-        try {
-            const res = await axios.get("http://192.168.0.102:5000/products");
-            setProducts(res.data);
-        } catch (err) {
-            toast.error(isArabic ? "فشل تحميل المنتجات" : "Failed to load products");
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const toggleService = (item) => {
         setSelectedServices(prev =>
             prev.find(i => i.id === item.id)
@@ -134,7 +123,9 @@ export default function Home() {
     const removeProduct = (item) => {
         setSelectedProducts(prev => {
             const existing = prev.find(p => p._id === item._id);
-            if (existing && existing.quantity > 1) {
+            if (!existing) return prev; // ✅ Prevent error if not selected
+
+            if (existing.quantity > 1) {
                 return prev.map(p => p._id === item._id ? { ...p, quantity: p.quantity - 1 } : p);
             } else {
                 return prev.filter(p => p._id !== item._id);
@@ -158,6 +149,8 @@ export default function Home() {
             return;
         }
 
+        setGenerateReceiptLoading(true)
+
         const receipt = {
             customerName,
             mobileNumber,
@@ -171,16 +164,16 @@ export default function Home() {
         };
 
         try {
-            const result = await axios.post("http://192.168.0.102:5000/receipts", receipt);
+            const result = await axios.post("http://192.168.8.10:5000/receipts", receipt);
             if (result.data.insertedId) {
                 toast.success(isArabic ? "تم حفظ الفاتورة بنجاح!" : "Receipt Saved Successfully!");
 
                 await Promise.all(selectedProducts.map(async (product) => {
                     const newInventory = product.inventory - product.quantity;
-                    await axios.put(`http://192.168.0.102:5000/products/${product._id}`, { inventory: newInventory });
+                    await axios.put(`http://192.168.8.10:5000/products/${product._id}`, { inventory: newInventory });
                 }));
 
-                const serialResult = await axios.get(`http://192.168.0.102:5000/getReceiptSerial/${result.data.insertedId}`);
+                const serialResult = await axios.get(`http://192.168.8.10:5000/getReceiptSerial/${result.data.insertedId}`);
                 const serial = serialResult.data.serial;
 
                 const now = Date.now();
@@ -198,28 +191,23 @@ export default function Home() {
                     return updated;
                 });
 
-                const printResponse = await axios.post('http://192.168.0.102:5000/print', { receiptId: result.data.insertedId });
+                const printResponse = await axios.post('http://192.168.8.10:5000/print', { receiptId: result.data.insertedId });
                 toast.success(printResponse.data.message);
+                setGenerateReceiptLoading(false)
 
                 setCustomerName('');
                 setMobileNumber('');
                 setSelectedServices([]);
                 setSelectedProducts([]);
                 setPaymentType('cash');
-
-                fetchProducts();
             }
         } catch (e) {
             toast.error(isArabic ? "فشل حفظ الفاتورة" : "Failed to save receipt");
             console.error(e);
+        } finally{
+            setGenerateReceiptLoading(false);
         }
     };
-
-    const filteredProducts = products.filter(p =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    if (loading) return <Loading />;
 
     return (
         <div className="min-h-screen w-full bg-gradient-to-br from-pink-100 via-white to-purple-100 px-4 py-6">
@@ -266,32 +254,14 @@ export default function Home() {
                     </div>
                 </div>
 
+                {/* Products  */}
                 <div>
                     <h2 className="text-xl font-bold mb-2 text-pink-700">
                         {isArabic ? "المنتجات" : "Products"}
                     </h2>
-                    <input
-                        type="text"
-                        placeholder={isArabic ? "بحث عن منتج..." : "Search for a product..."}
-                        className="input input-bordered w-full border-pink-300 focus:ring-2 focus:ring-pink-400 mb-2"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {filteredProducts.map((product) => (
-                            <div key={product._id} className="bg-white border border-pink-200 p-4 rounded-xl shadow-md">
-                                <h3 className="font-semibold text-pink-700">{product.name}</h3>
-                                <p>{isArabic ? "السعر" : "Price"}: {product.price} SAR</p>
-                                <p>{isArabic ? "المخزون" : "Stock"}: {product.inventory}</p>
-                                <button
-                                    className="mt-2 bg-pink-500 text-white rounded-full px-4 py-1 hover:bg-pink-600"
-                                    onClick={() => addProduct(product)}
-                                >
-                                    {isArabic ? "إضافة" : "Add"}
-                                </button>
-                            </div>
-                        ))}
-                    </div>
+                    <button onClick={() => navigate('/select-products')} className="bg-pink-500 text-white py-2 px-4 rounded-full">
+                        {isArabic ? "اختيار المنتجات" : "Select Products"}
+                    </button>
                 </div>
 
                 <div>
@@ -316,6 +286,31 @@ export default function Home() {
                     )}
                 </div>
 
+                <div>
+                    <h2 className="text-xl font-bold mb-2 text-pink-700">
+                        {isArabic ? "الخدمات المختارة" : "Selected Services"}
+                    </h2>
+                    {selectedServices.length === 0 ? (
+                        <p className="text-gray-500">{isArabic ? "لم يتم اختيار خدمات." : "No services selected."}</p>
+                    ) : (
+                        selectedServices.map(service => (
+                            <div key={service.id} className="flex justify-between items-center bg-purple-50 rounded-xl p-3 mb-2 shadow-sm">
+                                <div>
+                                    <p className="font-semibold">{isArabic ? service.name_ar : service.name}</p>
+                                    <p>{service.price} SAR</p>
+                                </div>
+                                <button
+                                    onClick={() => toggleService(service)}
+                                    className="bg-red-400 text-white px-3 py-1 rounded hover:bg-red-500"
+                                >
+                                    {isArabic ? "إزالة" : "Remove"}
+                                </button>
+                            </div>
+                        ))
+                    )}
+                </div>
+
+
                 <div className="space-y-1 text-pink-700">
                     <p><strong>{isArabic ? "الضريبة (15%):" : "VAT (15%)"}:</strong> {vat.toFixed(2)} SAR</p>
                     <p><strong>{isArabic ? "السعر الإجمالي:" : "Total"}:</strong> {total.toFixed(2)} SAR</p>
@@ -335,11 +330,20 @@ export default function Home() {
 
                 <div className="mt-4">
                     <button
-                        className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 rounded-xl text-lg font-bold hover:from-pink-600 hover:to-purple-600 transition"
+                        className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 rounded-xl text-lg font-bold hover:from-pink-600 hover:to-purple-600 transition flex items-center justify-center gap-2"
                         onClick={generateReceipt}
+                        disabled={generateReceiptLoading}
                     >
-                        {isArabic ? "إنشاء الفاتورة" : "Generate Receipt"}
+                        {generateReceiptLoading ? (
+                            <>
+                                <FaGear className="animate-spin" />
+                                {isArabic ? "جارٍ الإنشاء..." : "Generating..."}
+                            </>
+                        ) : (
+                            isArabic ? "إنشاء الفاتورة" : "Generate Receipt"
+                        )}
                     </button>
+
                 </div>
             </div>
             <ExpiredModal
