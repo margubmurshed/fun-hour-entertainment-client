@@ -39,7 +39,7 @@ export default function OpenCash() {
 
     setCashLoading(true);
     axios
-      .post("http://192.168.8.10:5000/cashes/", data)
+      .post("http://192.168.0.102:5000/cashes/", data)
       .then((result) => {
         if (result.data.insertedId) {
           toast.success(isArabic ? "تم فتح الصندوق بنجاح" : "Cash Opened Successfully");
