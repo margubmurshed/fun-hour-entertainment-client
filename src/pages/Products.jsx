@@ -28,7 +28,7 @@ export default function Products() {
     setLoading(true);
     try {
       const res = await axios.get("http://192.168.8.10:5000/products");
-      setProducts(res.data);
+      setProducts(res.data.products);
     } catch (err) {
       toast.error(isArabic ? "فشل في جلب المنتجات" : "Failed to fetch products");
       console.error(err);
