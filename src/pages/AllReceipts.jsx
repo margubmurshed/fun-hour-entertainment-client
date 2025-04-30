@@ -19,7 +19,7 @@ const AllReceiptsPage = () => {
       }
 
       try {
-        const { data } = await axios.get(`http://192.168.0.102:5000/receipts/cash-session/${cash._id}`);
+        const { data } = await axios.get(`http://192.168.8.10:5000/receipts/cash-session/${cash._id}`);
         setReceipts(data || []);
       } catch (error) {
         console.error("Failed to fetch receipts", error);

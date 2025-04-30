@@ -78,7 +78,7 @@ export default function Home() {
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            const res = await axios.get("http://192.168.0.102:5000/products");
+            const res = await axios.get("http://192.168.8.10:5000/products");
             setProducts(res.data);
         } catch (err) {
             toast.error(isArabic ? "فشل تحميل المنتجات" : "Failed to load products");
@@ -147,13 +147,13 @@ export default function Home() {
         };
 
         try {
-            const result = await axios.post("http://192.168.0.102:5000/receipts", receipt);
+            const result = await axios.post("http://192.168.8.10:5000/receipts", receipt);
             if (result.data.insertedId) {
                 toast.success(isArabic ? "تم حفظ الفاتورة بنجاح!" : "Receipt Saved Successfully!");
 
                 await Promise.all(selectedProducts.map(async (product) => {
                     const newInventory = product.inventory - product.quantity;
-                    await axios.put(`http://192.168.0.102:5000/products/${product._id}`, { inventory: newInventory });
+                    await axios.put(`http://192.168.8.10:5000/products/${product._id}`, { inventory: newInventory });
                 }));
 
                 const now = Date.now();
@@ -170,7 +170,7 @@ export default function Home() {
                     return updated;
                 });
 
-                const printResponse = await axios.post('http://192.168.0.102:5000/print', { receiptId: result.data.insertedId });
+                const printResponse = await axios.post('http://192.168.8.10:5000/print', { receiptId: result.data.insertedId });
                 toast.success(printResponse.data.message);
 
                 setCustomerName('');

@@ -26,7 +26,7 @@ export default function Products() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://192.168.0.102:5000/products");
+      const res = await axios.get("http://192.168.8.10:5000/products");
       setProducts(res.data);
     } catch (err) {
       toast.error(isArabic ? "فشل في جلب المنتجات" : "Failed to fetch products");
@@ -45,7 +45,7 @@ export default function Products() {
 
     setActionLoading(true);
     try {
-      await axios.delete(`http://192.168.0.102:5000/products/${id}`);
+      await axios.delete(`http://192.168.8.10:5000/products/${id}`);
       toast.success(isArabic ? "تم حذف المنتج بنجاح!" : "Product deleted successfully!");
       fetchProducts();
     } catch (err) {
@@ -82,7 +82,7 @@ export default function Products() {
 
     setActionLoading(true);
     try {
-      await axios.put(`http://192.168.0.102:5000/products/${currentProduct._id}`, {
+      await axios.put(`http://192.168.8.10:5000/products/${currentProduct._id}`, {
         name: currentProduct.name.trim(),
         price: parseFloat(currentProduct.price),
         inventory: currentProduct.inventory,
@@ -106,7 +106,7 @@ export default function Products() {
 
     setActionLoading(true);
     try {
-      await axios.post("http://192.168.0.102:5000/products", {
+      await axios.post("http://192.168.8.10:5000/products", {
         name: currentProduct.name.trim(),
         price: parseFloat(currentProduct.price),
         inventory: currentProduct.inventory,
