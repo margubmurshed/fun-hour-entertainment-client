@@ -13,6 +13,7 @@ export default function Products() {
   const [actionLoading, setActionLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [composing, setComposing] = useState(false);
   const [currentProduct, setCurrentProduct] = useState({
     name: "",
     price: "",
@@ -62,6 +63,7 @@ export default function Products() {
   };
 
   const handleChange = (e) => {
+    if (composing) return; // Don't update while composing Arabic
     const { name, value } = e.target;
     setCurrentProduct((prev) => ({
       ...prev,
@@ -135,8 +137,12 @@ export default function Products() {
         onChange={handleChange}
         placeholder={isArabic ? "اسم المنتج" : "Product Name"}
         className="input input-bordered w-full mb-4"
+        onCompositionStart={() => setComposing(true)}
+        onCompositionEnd={(e) => {
+          setComposing(false);
+          handleChange(e); // Now handle final value after composition
+        }}
         dir={isArabic ? "rtl" : "ltr"}
-        style={{ fontFamily: isArabic ? "Tahoma, Arial, sans-serif" : "inherit" }}
       />
       <label className="block text-sm font-medium text-gray-700 mb-1">{isArabic ? "سعر المنتج" : "Product Price"}</label>
       <input
