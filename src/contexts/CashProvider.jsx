@@ -13,7 +13,7 @@ const CashProvider = ({ children }) => {
 
     const fetchCash = () => {
         setCashLoading(true);
-        return axios.get(`http://192.168.8.10:5000/cashes/${user.email}`)
+        return axios.get(`http://192.168.0.102:5000/cashes/${user.email}`)
             .then(result => {
                 if (!result.data) setCash(null)
                 else setCash(result.data);

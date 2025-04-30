@@ -52,7 +52,7 @@ export default function SellSummary() {
   const fetchReceipts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://192.168.8.10:5000/receipts/cash-session/${cash._id}`);
+      const res = await axios.get(`http://192.168.0.102:5000/receipts/cash-session/${cash._id}`);
       setReceipts(res.data);
     } catch (err) {
       toast.error(isArabic ? "فشل في جلب الإيصالات!" : "Failed to fetch receipts!");

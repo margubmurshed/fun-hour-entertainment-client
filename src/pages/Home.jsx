@@ -1,20 +1,21 @@
 import axios from 'axios';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
 import { cashContext } from '../contexts/CashProvider';
 import Loading from '../components/Loading';
 import { languageContext } from '../contexts/LanguageProvider';
+import ExpiredModal from '../components/ExpiredModal';
 
 const rents = [
     { id: 1, name: "1 Hour", name_ar: "ساعة واحدة", price: 29, duration: 60 },
     { id: 2, name: "2 Hours", name_ar: "ساعتين", price: 40, duration: 120 },
     { id: 3, name: "3 Hours", name_ar: "ثلاث ساعات", price: 59, duration: 180 },
+    { id: 4, name: "1 Minute", name_ar: "ثلاث ساعات", price: 59, duration: 1 },
 ];
 
 const packages = [
-    { id: 4, name: "5-Day Monthly Package", name_ar: "باقة شهرية 5 أيام", price: 650, duration: 5 * 24 * 60 },
-    { id: 5, name: "3-Day Weekly Package", name_ar: "باقة أسبوعية 3 أيام", price: 400, duration: 3 * 24 * 60 },
+    { id: 5, name: "5-Day Monthly Package", name_ar: "باقة شهرية 5 أيام", price: 650, duration: 5 * 24 * 60 },
+    { id: 6, name: "3-Day Weekly Package", name_ar: "باقة أسبوعية 3 أيام", price: 400, duration: 3 * 24 * 60 },
 ];
 
 export default function Home() {
@@ -29,29 +30,36 @@ export default function Home() {
     const [activeRentals, setActiveRentals] = useState([]);
     const [expiredServices, setExpiredServices] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentExpiredIndex, setCurrentExpiredIndex] = useState(0);
     const { cash } = useContext(cashContext);
     const alertAudioRef = useRef(null);
 
+    useEffect(() => {
+        if (!alertAudioRef.current) {
+            const audio = new Audio('/alert.mp3');
+            audio.loop = true;
+            alertAudioRef.current = audio;
+        }
+
+        if (expiredServices.length > 0) {
+            alertAudioRef.current?.play().catch(e =>
+                console.warn("Audio blocked until user interaction:", e)
+            );
+            setIsModalOpen(true); // <-- 💥 This is missing!
+        } else {
+            if (alertAudioRef.current) {
+                alertAudioRef.current.pause();
+                alertAudioRef.current.currentTime = 0;
+            }
+        }
+    }, [expiredServices]);
 
     useEffect(() => {
         fetchProducts();
         const storedRentals = JSON.parse(localStorage.getItem('activeRentals') || '[]');
         setActiveRentals(storedRentals);
     }, []);
-
-    useEffect(() => {
-        if (!alertAudioRef.current) {
-            alertAudioRef.current = new Audio('/alert.mp3'); // Put alert.mp3 in public/
-            alertAudioRef.current.loop = true;
-        }
-
-        if (expiredServices.length > 0) {
-            alertAudioRef.current.play().catch(e => console.warn("Audio blocked until user interaction:", e));
-        } else {
-            alertAudioRef.current.pause();
-            alertAudioRef.current.currentTime = 0;
-        }
-    }, [expiredServices]);
 
 
     useEffect(() => {
@@ -75,10 +83,26 @@ export default function Home() {
         return () => clearInterval(interval);
     }, [activeRentals]);
 
+    const handleModalClose = () => {
+        if (currentExpiredIndex < expiredServices.length - 1) {
+            setCurrentExpiredIndex((prev) => prev + 1);
+        } else {
+            setIsModalOpen(false);
+            setExpiredServices([]); // optional: clear after showing all
+            setCurrentExpiredIndex(0);
+
+            if (alertAudioRef.current) {
+                alertAudioRef.current.pause();
+                alertAudioRef.current.currentTime = 0;
+            }
+        }
+    };
+
+
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            const res = await axios.get("http://192.168.8.10:5000/products");
+            const res = await axios.get("http://192.168.0.102:5000/products");
             setProducts(res.data);
         } catch (err) {
             toast.error(isArabic ? "فشل تحميل المنتجات" : "Failed to load products");
@@ -147,14 +171,17 @@ export default function Home() {
         };
 
         try {
-            const result = await axios.post("http://192.168.8.10:5000/receipts", receipt);
+            const result = await axios.post("http://192.168.0.102:5000/receipts", receipt);
             if (result.data.insertedId) {
                 toast.success(isArabic ? "تم حفظ الفاتورة بنجاح!" : "Receipt Saved Successfully!");
 
                 await Promise.all(selectedProducts.map(async (product) => {
                     const newInventory = product.inventory - product.quantity;
-                    await axios.put(`http://192.168.8.10:5000/products/${product._id}`, { inventory: newInventory });
+                    await axios.put(`http://192.168.0.102:5000/products/${product._id}`, { inventory: newInventory });
                 }));
+
+                const serialResult = await axios.get(`http://192.168.0.102:5000/getReceiptSerial/${result.data.insertedId}`);
+                const serial = serialResult.data.serial;
 
                 const now = Date.now();
                 const rentals = selectedServices.map(service => ({
@@ -162,6 +189,7 @@ export default function Home() {
                     mobileNumber,
                     serviceName: isArabic ? service.name_ar : service.name,
                     expireAt: now + (service.duration * 60 * 1000),
+                    serial
                 }));
 
                 setActiveRentals(prev => {
@@ -170,7 +198,7 @@ export default function Home() {
                     return updated;
                 });
 
-                const printResponse = await axios.post('http://192.168.8.10:5000/print', { receiptId: result.data.insertedId });
+                const printResponse = await axios.post('http://192.168.0.102:5000/print', { receiptId: result.data.insertedId });
                 toast.success(printResponse.data.message);
 
                 setCustomerName('');
@@ -228,8 +256,8 @@ export default function Home() {
                                 key={item.id}
                                 onClick={() => toggleService(item)}
                                 className={`rounded-full py-2 px-4 font-medium shadow ${selectedServices.some(i => i.id === item.id)
-                                        ? 'bg-pink-500 text-white hover:bg-pink-600'
-                                        : 'bg-white border border-pink-300 text-pink-600 hover:bg-pink-100'
+                                    ? 'bg-pink-500 text-white hover:bg-pink-600'
+                                    : 'bg-white border border-pink-300 text-pink-600 hover:bg-pink-100'
                                     }`}
                             >
                                 {isArabic ? item.name_ar : item.name} - {item.price} SAR
@@ -314,6 +342,13 @@ export default function Home() {
                     </button>
                 </div>
             </div>
+            <ExpiredModal
+                open={isModalOpen}
+                onClose={handleModalClose}
+                expiredServices={expiredServices.length > 0 ? [expiredServices[currentExpiredIndex]] : []}
+                isArabic={isArabic}
+            />
+
         </div>
 
     );
