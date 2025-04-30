@@ -135,6 +135,8 @@ export default function Products() {
         onChange={handleChange}
         placeholder={isArabic ? "اسم المنتج" : "Product Name"}
         className="input input-bordered w-full mb-4"
+        dir={isArabic ? "rtl" : "ltr"}
+        style={{ fontFamily: isArabic ? "Tahoma, Arial, sans-serif" : "inherit" }}
       />
       <label className="block text-sm font-medium text-gray-700 mb-1">{isArabic ? "سعر المنتج" : "Product Price"}</label>
       <input
